@@ -1,6 +1,6 @@
-# Project Title
+# Exploring USDA data for Pennsylvania from 2004 - 2010
 
-This repository contains work related to our final project for STAT184, where we are using the skills learned in class to explore how federal spending in Pennsylvania has changed over time. 
+This repository contains work related to our final project for STAT184, where we use the skills learned in class to explore Pennsylvania Federal Funds data from the Department of Agriculture.
 
 ## Overview
 
@@ -12,7 +12,7 @@ This is optional but highly recommended. You'll include one interesting insight 
 
 ## Data Sources and Acknowledgements
 
-Be sure to list where you got any data used within the project. Be sure to acknowledge any one whose work or elements you're drawing upon.
+All data from USDA: https://www.ers.usda.gov/data-products/federal-funds
 
 ## Current Plan
 
@@ -25,4 +25,5 @@ Use this section to explain the structure of your repo. This should help visitor
 
 ## Authors
 
-Give information about who are the authors of the project and how people can get in touch if they have questions.
+Robert Pitsko (rmp6022@psu.edu)
+Zach Thomas (zft5126@psu.edu)
