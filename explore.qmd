@@ -1,0 +1,21 @@
+---
+title: "explore"
+format: html
+editor: visual
+---
+
+# exploring data 
+
+```{r}
+# install.packages("readxl")
+library(readxl)
+
+df04 = read_excel("data/FederalFunds_2004Data_PA.xls")
+df05 = read_excel("data/FederalFunds_2005Data_PA.xls")
+df06 = read_excel("data/FederalFunds_2006Data_PA.xls")
+df07 = read_excel("data/FederalFunds_2007Data_PA.xls")
+df08 = read_excel("data/FederalFunds_2008Data_PA.xls")
+df09 = read_excel("data/FederalFunds_2009Data_PA.xls")
+df010 = read_excel("data/FederalFunds_2010Data_PA.xls")
+
+```
