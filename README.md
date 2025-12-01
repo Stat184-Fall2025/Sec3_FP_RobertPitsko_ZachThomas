@@ -1,6 +1,6 @@
 # Project Title
 
-Write a 1-2 sentences that quickly and clearly convey what your repo is for.
+This repository contains work related to our final project for STAT184, where we are using the skills learned in class to explore how federal spending in Pennsylvania has changed over time. 
 
 ## Overview
 
