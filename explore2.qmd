@@ -1,0 +1,177 @@
+---
+title: "explore2"
+format: html
+editor: visual
+---
+
+```{r}
+# install.packages("readxl")
+library(readxl)
+library(dplyr)
+
+# Gets the data frame of USDA data for each year
+# removes the first row of each df as this contains null values 
+# keeps only the needed rows (other columns are very sparse)
+# adds a year column to each data frame and binds them together
+
+df04 = read_excel("data/FederalFunds_2004Data_PA.xls")
+df04 =df04[1:10]
+df04 = df04[-1, ]
+df04$Year = "2004"
+
+df05 = read_excel("data/FederalFunds_2005Data_PA.xls")
+df05 =df05[1:10]
+df05 = df05[-1, ]
+df05$Year = "2005"
+
+df06 = read_excel("data/FederalFunds_2006Data_PA.xls")
+df06 =df06[1:10]
+df06 = df06[-1, ]
+df06$Year = "2006"
+
+df07 = read_excel("data/FederalFunds_2007Data_PA.xls")
+df07 =df07[1:10]
+df07 = df07[-1, ]
+df07$Year = "2007"
+
+df08 = read_excel("data/FederalFunds_2008Data_PA.xls")
+df08 =df08[1:10]
+df08 = df08[-1, ]
+df08$Year = "2008"
+
+df09 = read_excel("data/FederalFunds_2009Data_PA.xls")
+df09 =df09[1:10]
+df09 = df09[-1, ]
+df09$Year = "2009"
+
+df10 = read_excel("data/FederalFunds_2010Data_PA.xls")
+df10 =df10[1:10]
+df10 = df10[-1, ]
+df10$Year = "2010"
+
+combined_df = rbind(df04, df05, df06, df07, df08, df09, df10)
+View(combined_df)
+```
+
+```{r}
+function_spending_df = combined_df %>%
+  select(FunctionCodeDescription, StateTotal, Year) %>%
+  mutate(StateTotal = as.numeric(StateTotal)) %>%
+  group_by(FunctionCodeDescription, Year) %>%
+  summarize(TotalSpend = sum(StateTotal)) 
+```
+
+```{r}
+# creates line plot 
+ggplot(function_spending_df, aes(x = Year, y = TotalSpend, color = FunctionCodeDescription, group = FunctionCodeDescription)) +
+  geom_line(aes(linetype = FunctionCodeDescription)) +
+  labs(
+    title = "title",
+    x = "Year", y = "spend")
+
+```
+
+```{r}
+# creates bar plot 
+ggplot(function_spending_df, aes(x = Year, y = TotalSpend, group = FunctionCodeDescription, color=FunctionCodeDescription)) +
+  geom_bar(stat ="identity", position = "dodge") +
+  labs(title = "titel", x = "Year", y = "spend")
+```
+
+```{r}
+noIncome = function_spending_df %>% filter(FunctionCodeDescription != "IncomeSec")
+# creates bar plot 
+ggplot(noIncome, aes(x = Year, y = TotalSpend, group = FunctionCodeDescription, color=FunctionCodeDescription)) +
+  geom_bar(stat ="identity", position = "dodge") +
+  labs(title = "titel", x = "Year", y = "spend")
+```
+
+```{r}
+# creates line plot 
+ggplot(noIncome, aes(x = Year, y = TotalSpend, color = FunctionCodeDescription, group = FunctionCodeDescription)) +
+  geom_line(aes(linetype = FunctionCodeDescription)) +
+  labs(
+    title = "title",
+    x = "Year", y = "spend")
+```
+
+```{r}
+ag_df = combined_df %>%
+  select(FunctionCodeDescription, FunctionCode, StateTotal, Year) %>%
+  filter(FunctionCodeDescription == "Agriculture") %>% 
+  mutate(StateTotal = as.numeric(StateTotal)) %>%
+  group_by(FunctionCode, Year) %>%
+  summarize(TotalSpend = sum(StateTotal)) 
+
+
+ggplot(ag_df, aes(x = Year, y = TotalSpend, color = FunctionCode, group = FunctionCode)) +
+  geom_line(aes(linetype = FunctionCode)) +
+  labs(
+    title = "ag_df",
+    x = "Year", y = "spend")
+```
+
+```{r}
+com_df = combined_df %>%
+  select(FunctionCodeDescription, FunctionCode, StateTotal, Year) %>%
+  filter(FunctionCodeDescription == "Community") %>% 
+  mutate(StateTotal = as.numeric(StateTotal)) %>%
+  group_by(FunctionCode, Year) %>%
+  summarize(TotalSpend = sum(StateTotal)) 
+
+
+ggplot(com_df, aes(x = Year, y = TotalSpend, color = FunctionCode, group = FunctionCode)) +
+  geom_line(aes(linetype = FunctionCode)) +
+  labs(
+    title = "ag_df",
+    x = "Year", y = "spend")
+
+```
+
+```{r}
+def_df = combined_df %>%
+  select(FunctionCodeDescription, FunctionCode, StateTotal, Year) %>%
+  filter(FunctionCodeDescription == "DefenseSpace") %>% 
+  mutate(StateTotal = as.numeric(StateTotal)) %>%
+  group_by(FunctionCode, Year) %>%
+  summarize(TotalSpend = sum(StateTotal)) 
+
+
+ggplot(def_df, aes(x = Year, y = TotalSpend, color = FunctionCode, group = FunctionCode)) +
+  geom_line(aes(linetype = FunctionCode)) +
+  labs(
+    title = "ag_df",
+    x = "Year", y = "spend")
+```
+
+```{r}
+hum_df = combined_df %>%
+  select(FunctionCodeDescription, FunctionCode, StateTotal, Year) %>%
+  filter(FunctionCodeDescription == "HumanRes") %>% 
+  mutate(StateTotal = as.numeric(StateTotal)) %>%
+  group_by(FunctionCode, Year) %>%
+  summarize(TotalSpend = sum(StateTotal)) 
+
+
+ggplot(hum_df, aes(x = Year, y = TotalSpend, color = FunctionCode, group = FunctionCode)) +
+  geom_line(aes(linetype = FunctionCode)) +
+  labs(
+    title = "ag_df",
+    x = "Year", y = "spend")
+```
+
+```{r}
+nat_df = combined_df %>%
+  select(FunctionCodeDescription, FunctionCode, StateTotal, Year) %>%
+  filter(FunctionCodeDescription == "NationalFunc") %>% 
+  mutate(StateTotal = as.numeric(StateTotal)) %>%
+  group_by(FunctionCode, Year) %>%
+  summarize(TotalSpend = sum(StateTotal)) 
+
+
+ggplot(nat_df, aes(x = Year, y = TotalSpend, color = FunctionCode, group = FunctionCode)) +
+  geom_line(aes(linetype = FunctionCode)) +
+  labs(
+    title = "ag_df",
+    x = "Year", y = "spend")
+```

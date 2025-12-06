@@ -4,18 +4,201 @@ format: html
 editor: visual
 ---
 
-# exploring data 
+# exploring data
 
 ```{r}
 # install.packages("readxl")
 library(readxl)
+library(dplyr)
+
+# Gets the data frame of USDA data for each year
+# removes the first row of each df as this contains null values 
+# keeps only the needed rows (other columns are very sparse)
+# adds a year column to each data frame and binds them together
 
 df04 = read_excel("data/FederalFunds_2004Data_PA.xls")
+df04 =df04[1:10]
+df04 = df04[-1, ]
+df04$Year = "2004"
+
 df05 = read_excel("data/FederalFunds_2005Data_PA.xls")
+df05 =df05[1:10]
+df05 = df05[-1, ]
+df05$Year = "2005"
+
 df06 = read_excel("data/FederalFunds_2006Data_PA.xls")
+df06 =df06[1:10]
+df06 = df06[-1, ]
+df06$Year = "2006"
+
 df07 = read_excel("data/FederalFunds_2007Data_PA.xls")
+df07 =df07[1:10]
+df07 = df07[-1, ]
+df07$Year = "2007"
+
 df08 = read_excel("data/FederalFunds_2008Data_PA.xls")
+df08 =df08[1:10]
+df08 = df08[-1, ]
+df08$Year = "2008"
+
 df09 = read_excel("data/FederalFunds_2009Data_PA.xls")
-df010 = read_excel("data/FederalFunds_2010Data_PA.xls")
+df09 =df09[1:10]
+df09 = df09[-1, ]
+df09$Year = "2009"
+
+df10 = read_excel("data/FederalFunds_2010Data_PA.xls")
+df10 =df10[1:10]
+df10 = df10[-1, ]
+df10$Year = "2010"
+
+combined_df = rbind(df04, df05, df06, df07, df08, df09, df10)
+View(combined_df)
+```
+
+```{r}
+function_spending_df = combined_df %>%
+  mutate(Function = paste(FunctionCodeDescription, FunctionCode)) %>%
+  select(Function, StateTotal, Year) 
+```
+
+```{r}
+library(dplyr)
+
+spending = function_spending_df %>%
+  mutate(StateTotal = as.numeric(StateTotal)) %>%
+  group_by(Function, Year) %>%
+  summarize(TotalSpend = sum(StateTotal)) 
 
 ```
+
+```{r}
+ggplot(spending, aes(x = Year, y = Function, fill = TotalSpend)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "darkblue") +
+  theme_minimal()
+```
+
+```{r}
+
+avg_spending = function_spending_df %>%
+  mutate(StateTotal = as.numeric(StateTotal)) %>%
+  group_by(Function, Year) %>%
+  summarize(TotalSpend = sum(StateTotal)) %>%
+  group_by(Function) %>%
+  summarize(avg_spending = mean(TotalSpend, na.rm = TRUE)) %>%
+  arrange(desc(avg_spending))
+
+View(avg_spending)
+
+
+```
+
+```{r}
+
+categories = avg_spending %>%
+  mutate(spending_level = case_when(
+    avg_spending > 1000000000 ~ "1B",
+    avg_spending > 100000000 ~ "100M",
+    TRUE ~ "Under 100M"
+  ))
+
+high_spend = categories %>% filter(spending_level == "1B") 
+medium_spend = categories %>% filter(spending_level == "100M")
+low_spend = categories %>% filter(spending_level == "Under 100M")
+
+
+high_spend_df = inner_join(spending, high_spend, by = "Function")
+med_spend_df = inner_join(spending, medium_spend, by = "Function")
+low_spend_df = inner_join(spending, low_spend, by = "Function")
+
+```
+
+```{r}
+
+# creates line plot 
+ggplot(high_spend_df, aes(x = Year, y = TotalSpend, color = Function, group = Function)) +
+  geom_line(aes(linetype = Function)) +
+  labs(
+    title = "title",
+    x = "Year", y = "spend")
+
+```
+
+```{r}
+# creates line plot 
+ggplot(med_spend_df, aes(x = Year, y = TotalSpend, color = Function, group = Function)) +
+  geom_line(aes(linetype = Function)) +
+  labs(
+    title = "title",
+    x = "Year", y = "spend")
+```
+
+```{r}
+ggplot(low_spend_df, aes(x = Year, y = TotalSpend, color = Function, group = Function)) +
+  geom_line(aes(linetype = Function)) +
+  labs(
+    title = "title",
+    x = "Year", y = "spend")
+```
+
+```{r}
+# creates bar plot 
+ggplot(high_spend_df, aes(x = Year, y = TotalSpend, group = Function, color=Function)) +
+  geom_bar(stat ="identity", position = "dodge") +
+  labs(title = "titel", x = "Year", y = "spend")
+```
+
+```{r}
+# creates bar plot 
+ggplot(med_spend_df, aes(x = Year, y = TotalSpend, group = Function, color=Function)) +
+  geom_bar(stat ="identity", position = "dodge") +
+  labs(title = "titel", x = "Year", y = "spend")
+```
+
+```{r}
+# creates bar plot 
+ggplot(low_spend_df, aes(x = Year, y = TotalSpend, group = Function, color=Function)) +
+  geom_bar(stat ="identity", position = "dodge") +
+  labs(title = "titel", x = "Year", y = "spend")
+```
+
+```{r}
+
+general_function_df = combined_df %>%
+  select(FunctionCodeDescription, StateTotal, Year) %>%
+  mutate(StateTotal = as.numeric(StateTotal)) %>%
+  group_by(FunctionCodeDescription, Year) %>%
+  summarize(TotalSpend = sum(StateTotal)) 
+```
+
+```{r}
+
+avg_spending = general_function_df %>%
+  group_by(FunctionCodeDescription) %>%
+  summarize(avg_spending = mean(TotalSpend, na.rm = TRUE)) %>%
+  arrange(desc(avg_spending))
+
+
+categories = avg_spending %>%
+  mutate(spending_level = case_when(
+    avg_spending > 1000000000 ~ "1B",
+    avg_spending > 100000000 ~ "100M",
+    TRUE ~ "Under 100M"
+  ))
+
+high_spend = categories %>% filter(spending_level == "1B") 
+medium_spend = categories %>% filter(spending_level == "100M")
+low_spend = categories %>% filter(spending_level == "Under 100M")
+
+View(high_spend)
+View(medium_spend)
+View(low_spend)
+# high_spend_df = inner_join(spending, high_spend, by = "FunctionCodeDescription")
+# med_spend_df = inner_join(spending, medium_spend, by = "FunctionCodeDescription")
+# low_spend_df = inner_join(spending, low_spend, by = "FunctionCodeDescription")
+
+```
+
+Should do Code description as a whole
+
+Then do individual codes within code descriptions....
