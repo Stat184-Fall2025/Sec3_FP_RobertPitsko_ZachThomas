@@ -1,39 +1,60 @@
 ---
-title: "Analyzing PA USDA Financial Data"
-format: html
-editor: visual
+title: "Analyzing PA USDA Federal Funds Data"
+subtitle: "Stat 184 Final Document"
+author: "Robert Pitsko, Zach Thomas"
+date: "18 December 2025"
+format:
+  pdf:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    code-fold: show
+    theme: cosmo
+execute:
+  echo: true
+  warning: false
+  message: false
 ---
 
-## Exploratory vs. Confirmatory Data Analysis 
+# Introduction
 
-explain why we chose to do exploratory analysis.
+When looking for data for this project we came across the U.S. Department of Agriculture (USDA) Economic Research website. From that website, we decided to explore the available Federal Funds data for the state of Pennsylvania, which ranges from years 2004 to 2010. This data captures federal funding information relating to specific counties in the state of Pennsylvania. Each row by default is a line item that contains 78 rows, including an object code, function code, and spending total. The combined data (from 2004 to 2010) has over 5,000 line items, each representing an amount of money given to the state for a specific purpose.
 
-## "Tidy Verse vs Base R"
+We took an **Exploratory Data Analysis** approach as we did not yet understand the data and we did not have any hypothesis to test. In the EDA process, we cleaned and combined the data and focused on key columns like object code, function code, year, and spending. Our goal was to explore the relationship between spending and object code over time as well as the relationship between spending and function code over time.
 
-Talk about why tidy verse is helpful...
+# Programming Paradigm and Ethical Principals
+
+## Tidyverse
+
+We decided to use the tidyverse libraries and methods for a majority of our data wrangling and visualization as it is easy to use and efficient for small to medium data sets. Our code shown in appendix follows the tidyverse style guided making it easy to read.
 
 ## FAIR and CARE
 
-explain how the data meets FAIR and CARE principles
+This data meets the FAIR principals as it is publicaly available on the USDA Economic Research Federal Funds website. The data sets can be downloaded by anyone on the internet. The website also has clear documentation going over how the data is obtained, and explains all object and function codes. The data set and the documentation use clear and accessible language.
 
-## Actual data analysis
+The data meets the CAER principals as the purpose of this data is to provide transparency for the public good. The data is inclusive and designed to minimize harm and maximize benefit through transparency.
+
+# Data Analysis
 
 1.  Include high quality visualizations (with alt text)
 2.  Find descriptive statistics and present in table
 3.  explain and discus everything... obviously... text heavy document code only in appendix. Should reference figures in body of text tho....
 
-### Object Code Section (Zach)
+## Object Code (Zach)
 
-### Function Code Section (Rob)
+## Function Code
 
-## Code Appendix
+# Appendix
 
 1.  include well documented code for everything
+
 2.  code should follow same style
+
 3.  include PCIP plan
+
 4.  Read data via csv and web scrapping... perhaps we read via web scraping in qmd document but show code to read from csv in appendix
 
-## Notes for Github (Do no include in quarto document...)
+Notes for Github (Do no include in quarto document...)
 
 1.  made multiple commits and pushes (at least 2 by each team member)
 2.   included commit comments
