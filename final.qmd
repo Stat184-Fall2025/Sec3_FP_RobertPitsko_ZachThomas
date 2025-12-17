@@ -1,0 +1,42 @@
+---
+title: "Analyzing PA USDA Financial Data"
+format: html
+editor: visual
+---
+
+## Exploratory vs. Confirmatory Data Analysis 
+
+explain why we chose to do exploratory analysis.
+
+## "Tidy Verse vs Base R"
+
+Talk about why tidy verse is helpful...
+
+## FAIR and CARE
+
+explain how the data meets FAIR and CARE principles
+
+## Actual data analysis
+
+1.  Include high quality visualizations (with alt text)
+2.  Find descriptive statistics and present in table
+3.  explain and discus everything... obviously... text heavy document code only in appendix. Should reference figures in body of text tho....
+
+### Object Code Section (Zach)
+
+### Function Code Section (Rob)
+
+## Code Appendix
+
+1.  include well documented code for everything
+2.  code should follow same style
+3.  include PCIP plan
+4.  Read data via csv and web scrapping... perhaps we read via web scraping in qmd document but show code to read from csv in appendix
+
+## Notes for Github (Do no include in quarto document...)
+
+1.  made multiple commits and pushes (at least 2 by each team member)
+2.   included commit comments
+3.  have at least two branches at some point in the repo's history
+4.  show a Pull Request initiated by one team member and completed by a different team member
+5.  makes use of the Issues system to their advantage.
