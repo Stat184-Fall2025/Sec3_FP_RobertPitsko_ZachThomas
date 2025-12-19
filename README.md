@@ -4,19 +4,18 @@ This repository contains work related to our final project for STAT184, where we
 
 ## Overview
 
-Expand on those introductory sentences with a brief but informative description of your project's purpose and goals. This section should help visitors decide whether they should dig deeper into your repo/project.
+We are using Pennsylvania spending to data in different objects, for example grants and salaries, and different functions, for example agriculture and national funding. We are tracking the data over time to see if we can spot any interesting trends or ideas that we could draw from to create a unique conclusion. We will be using ggplot to make our graphs and will be drawing the data from the USDA Federal Funds website which makes the data open source and available for analysis. 
 
-### Interesting Insight (Optional)
+### Interesting Insight
+One interesting insight was the actual total spending on each category in the years. Its interesting to see the amount in the billions for some subjects even just for PA. When you look at it in an overview some entire country's spend in a year what we spend in a few months just in PA. 
 
-This is optional but highly recommended. You'll include one interesting insight from your project as part of the README. This insight is most effective when you include a visual. Keep in mind that this visual must be included as an image file (e.g., JPG, PNG, etc.). You can export plots created with `{ggplot2}` by using the function `ggsave`.
 
 ## Data Sources and Acknowledgements
 
 All data from USDA: https://www.ers.usda.gov/data-products/federal-funds
 
 ## Current Plan
-
-Provide some information about what you intend to doe with the project. You can additionally refer the visitor to your detailed plan document.
+We will first take all of our data and upload to the combined Git (this repo), then we will split off into our own paths Zach doing the objects analysis and Robert doing the function analysis. We will use clean qmd notebooks to represent our work and then will commit everything and tidy up our git in order to effectively present our EDA and findings. 
 
 ## Repo Structure
 
