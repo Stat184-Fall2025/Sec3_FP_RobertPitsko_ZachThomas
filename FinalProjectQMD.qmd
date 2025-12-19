@@ -17,7 +17,7 @@ execute:
 ---
 
 
-## Introduction
+# Introduction
 
 When looking for data for this project we came across the U.S. Department of Agriculture (USDA) Economic Research website. From that website, we decided to explore the available Federal Funds data for the state of Pennsylvania, which ranges from years 2004 to 2010. This data captures federal funding information relating to specific counties in the state of Pennsylvania. Each row by default is a line item that contains an object code, function code, and spending total. The combined data (from 2004 to 2010) has over 5,000 rows, each representing a federal program for a given year. Each program is has its totals summed for each county, however we only used the totals to get a more braod and statewide view of spending in the agriculture functions. 
 
@@ -50,7 +50,7 @@ This data meets the FAIR principals as it is publically available on the USDA Ec
 
 The data meets the CARE principals as the purpose of this data is to provide transparency for the public good. The data is inclusive and designed to minimize harm and maximize benefit through transparency.
 
-## Data Analysis
+# Data Analysis
 
 Before we dive into the function code and object code, we wanted to examine the data set as a whole. Summary statistics provide an overview of the data’s central tendencies, variability, and range, which helps us understand the scope and patterns of the data. The full summary table can be seen in @tbl-year-summary. We see that total federal spending in Pennsylvania is monotonically increasing from 2004 to 2010, growing from approximately $102.6 billion to $164.4 billion, an increase of about 60% over the seven-year period. 
 The median program size remains relatively stable and small across all years, hovering between $1.23 million and $1.64 million, which indicates that most federal programs provide modest amounts of funding. In contrast, the mean program size is substantially higher, ranging from $137.49 million in 2004 to $197.38 million in 2010, suggesting that the distribution is right-skewed with a few very large programs pulling the average upward. 
@@ -106,7 +106,7 @@ caption = " Annual summary statistics for federal funds to Pennsylvania (in mill
 kable_styling(full_width = FALSE, position = "center")
 
 ```
-### Function Code
+## Function Code
 
 Here we see our function code plot. We first see that income security is way higher than any other spending leading the charge at around 100 Billion in 2010. This is surprising as you might think other categories such as general agriculture would get more funding, however in a state like PA agriculture is not as much as a focus as the weather can only stand certain types of crops. National Function comes after and covers federal budget expenditures directly that are accounted into federal funds data. 
 
@@ -153,7 +153,7 @@ ggplot(
 
 
 
-### Object Code
+## Object Code
 
 Here we see our Object Spending covering our x objects that contribute to the federal funds spending. On top is retirement which matches up to our functions data showing it on top. However, we see a closer difference in the objects than we do the functions with direct payments to individuals and grants close behind. This shows us that majority of the spending in PA for agricultural related functions is salaries and retirement which does make sense for a densely populated state like PA. 
 ```{r fig-object, fig.cap="Federal spending in Pennsylvania by object code from 2004 to 2010.", fig.alt="Line chart showing federal spending in Pennsylvania over time, separated by object codes such as grants, loans, and direct payments.", fig.show='hold'}
@@ -176,32 +176,32 @@ theme_minimal()
 ```
 
 
-## Author Contributions
+# Author Contributions
 - **Zach Thomas:** Visualization (Object Code), Writing (Intro/EDA narrative), Data curation, QMD File Creation
 - **Robert Pitsko:** Visualization (Function Code), Data curation, Writing (FAIR/CARE), QMD File Creation
 
-## References
+# References
 Data Link:  https://www.ers.usda.gov/data-products/federal-funds
 
-## Code Appendix
+# Code Appendix
 ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 #Object Code Section
 # Author: Zach Thomas | Reviewer: Robert Pitsko
 library(readxl)
 #data
-PA_2010 <- read_excel("C:/Users/Thoma/OneDrive - Lycoming College/Documents/GitHub/Sec3_FP_RobertPitsko_ZachThomas/data/FederalFunds_2010Data_PA.xls")
+PA_2010 <- read_excel("data/FederalFunds_2010Data_PA.xls")
 
-PA_2009 <- read_excel("C:/Users/Thoma/OneDrive - Lycoming College/Documents/GitHub/Sec3_FP_RobertPitsko_ZachThomas/data/FederalFunds_2009Data_PA.xls")
+PA_2009 <- read_excel("data/FederalFunds_2009Data_PA.xls")
 
-PA_2008 <- read_excel("C:/Users/Thoma/OneDrive - Lycoming College/Documents/GitHub/Sec3_FP_RobertPitsko_ZachThomas/data/FederalFunds_2008Data_PA.xls")
+PA_2008 <- read_excel("data/FederalFunds_2008Data_PA.xls")
 
-PA_2007 <- read_excel("C:/Users/Thoma/OneDrive - Lycoming College/Documents/GitHub/Sec3_FP_RobertPitsko_ZachThomas/data/FederalFunds_2007Data_PA.xls")
+PA_2007 <- read_excel("data/FederalFunds_2007Data_PA.xls")
 
-PA_2006 <- read_excel("C:/Users/Thoma/OneDrive - Lycoming College/Documents/GitHub/Sec3_FP_RobertPitsko_ZachThomas/data/FederalFunds_2006Data_PA.xls")
+PA_2006 <- read_excel("data/FederalFunds_2006Data_PA.xls")
 
-PA_2005 <- read_excel("C:/Users/Thoma/OneDrive - Lycoming College/Documents/GitHub/Sec3_FP_RobertPitsko_ZachThomas/data/FederalFunds_2005Data_PA.xls")
+PA_2005 <- read_excel("data/FederalFunds_2005Data_PA.xls")
 
-PA_2004 <- read_excel("C:/Users/Thoma/OneDrive - Lycoming College/Documents/GitHub/Sec3_FP_RobertPitsko_ZachThomas/data/FederalFunds_2004Data_PA.xls")
+PA_2004 <- read_excel("data/FederalFunds_2004Data_PA.xls")
 
 #drop rows
 PA_2010_clean <- PA_2010[1:10]
