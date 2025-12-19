@@ -1,15 +1,15 @@
 ---
 title: "Analyzing PA USDA Federal Funds Data"
 subtitle: "Stat 184 Final Document"
-author:
-  - "Robert Pitsko"
-  - "Zach Thomas"
-date: "2025-12-18"
+author: "Robert Pitsko, Zach Thomas"
+date: "18 December 2025"
 format:
   pdf:
     toc: true
+    toc-depth: 2
     number-sections: true
-    df-print: kable
+    code-fold: show
+    theme: cosmo
 execute:
   echo: false
   warning: false
@@ -19,14 +19,16 @@ execute:
 
 # Introduction
 
-When looking for data for this project we came across the U.S. Department of Agriculture (USDA) Economic Research website. From that website, we decided to explore the available Federal Funds data for the state of Pennsylvania, which ranges from years 2004 to 2010. This data captures federal funding information relating to specific counties in the state of Pennsylvania. Each row by default is a line item that contains an object code, function code, and spending total. The combined data (from 2004 to 2010) has over 5,000 rows, each representing a federal program for a given year. Each program is has its totals summed for each county, however we only used the totals to get a more braod and statewide view of spending in the agriculture functions. 
+When looking for data for this project we came across the U.S. Department of Agriculture (USDA) Economic Research website. From that website, we decided to explore the available Federal Funds data for the state of Pennsylvania, which ranges from years 2004 to 2010. This data captures federal funding information relating to specific counties in the state of Pennsylvania. Each row by default is a line item that contains an object code, function code, and spending total. The combined data (from 2004 to 2010) has over 5,000 rows, each representing a federal program for a given year.
 
 We took an Exploratory Data Analysis approach as we did not yet understand the data and we did not have any hypothesis to test. In the EDA process, we cleaned and combined the data and focused on key columns like object code, function code, year, and spending. Our goal was to explore the relationship between spending and object code over time as well as the relationship between spending and function code over time. 
 
-It is worth noting that even though this data came from the USDA Economic Research website, it includes federal spending on Pennsylvania from all government agencies not just the USDA. The data is agriculturally based but has some spillover that can't be seperated from the fact that it is national spending. This reliance however ties into our EDA and how we analyze the spending in these categories over time. 
-```{r setup}
-# Author: Zach Thomas | Reviewer: Robert Pitsko
+It is worth noting that even though this data came from the USDA Economic Research website, it includes federal spending on Pennsylvania from all government agencies not just the USDA.
 
+```{r setup}
+#| label: packages
+#| echo: false
+# Author: Zach Thomas | Reviewer: Robert Pitsko
 # Style guide: Tidyverse style guide
 
 library(tidyverse)
@@ -46,71 +48,98 @@ We decided to use the tidyverse libraries and methods for a majority of our data
 
 ### FAIR and CARE
 
-This data meets the FAIR principals as it is publically available on the USDA Economic Research Federal Funds website. The data sets can be downloaded by anyone on the internet. The website also has clear documentation going over how the data is obtained, and explains all object and function codes. The data set and the documentation use clear and accessible language. 
+This data meets the FAIR principals as it is publicly available on the USDA Economic Research Federal Funds website. The data sets can be downloaded by anyone on the internet. The website also has clear documentation going over how the data is obtained, and explains all object and function codes. The data set and the documentation use clear and accessible language. 
 
 The data meets the CARE principals as the purpose of this data is to provide transparency for the public good. The data is inclusive and designed to minimize harm and maximize benefit through transparency.
 
 # Data Analysis
 
-Before we dive into the function code and object code, we wanted to examine the data set as a whole. Summary statistics provide an overview of the data’s central tendencies, variability, and range, which helps us understand the scope and patterns of the data. The full summary table can be seen in @tbl-year-summary. We see that total federal spending in Pennsylvania is monotonically increasing from 2004 to 2010, growing from approximately $102.6 billion to $164.4 billion, an increase of about 60% over the seven-year period. 
-The median program size remains relatively stable and small across all years, hovering between $1.23 million and $1.64 million, which indicates that most federal programs provide modest amounts of funding. In contrast, the mean program size is substantially higher, ranging from $137.49 million in 2004 to $197.38 million in 2010, suggesting that the distribution is right-skewed with a few very large programs pulling the average upward. 
-
-One may notice that the minimum values are all negative. These negative values typically represent loan repayments to the federal government, accounting adjustments, or recovered overpayments rather than actual expenditures
-
 ```{r table}
-# Author: Robert Pitsko | Reviewer: Zach Thomas
+#| label: create-dataframe
+#| echo: false
+#| 
+# Author: Zach Thomas | Reviewer: Robert Pitsko
 
 files <- list.files(here("data"),
-pattern = "FederalFunds_\\d{4}Data_PA\\.xls$",
-full.names = TRUE)
+pattern = "FederalFunds_\\d{4}Data_PA\\.xls$", full.names = TRUE)
 
 get_year <- function(path) readr::parse_number(basename(path))
 
 combined_df <- purrr::map_dfr(files, function(f) {
 
 read_excel(f) %>%
-mutate(Year = get_year(f))
-})
+  mutate(Year = get_year(f))})
 
 combined_df <- combined_df %>%
-mutate(
-StateTotal = readr::parse_number(as.character(StateTotal)),
-ObjectCode = as.character(ObjectCode)
-) %>%
-filter(!is.na(StateTotal), !is.na(ObjectCode))
-
+  mutate(
+    StateTotal = readr::parse_number(as.character(StateTotal)),
+    ObjectCode = as.character(ObjectCode)
+  ) %>%
+  filter(!is.na(StateTotal), !is.na(ObjectCode))
 ```
-```{r dataframe}
-# Author: Robert Pitsko | Reviewer: Zach Thomas
 
+```{r}
+#| label: tbl-yearly-summary
+#| echo: false
+#| tbl-cap: "Annual summary statistics for federal funds to Pennsylvania (in millions of dollars). Total Funds represents the sum across all federal programs. Min/Max/Median/Mean describe the distribution of individual program spending. Programs indicates the number of federal programs with funding each year. Note: Negative values may represent loan repayments, program adjustments, or recovered funds." 
+
+# Summary statistics by year across all programs
 year_summary <- combined_df %>%
-group_by(Year) %>%
-summarise(
-Total = sum(StateTotal, na.rm = TRUE),
-Min = min(StateTotal, na.rm = TRUE),
-Max = max(StateTotal, na.rm = TRUE),
-Median = median(StateTotal, na.rm = TRUE),
-Mean = mean(StateTotal, na.rm = TRUE),
-StdDev = sd(StateTotal, na.rm = TRUE),
-Programs = n(),
-.groups = "drop"
-)
+  select(StateTotal, Year) %>%
+  mutate(StateTotal = as.numeric(StateTotal)) %>%
+  group_by(Year) %>%
+  summarize(
+    total_spending = sum(StateTotal) / 1e6,  # Convert to millions
+    min_spending = min(StateTotal) / 1e6,
+    max_spending = max(StateTotal) / 1e6,
+    median_spending = median(StateTotal) / 1e6,
+    mean_spending = mean(StateTotal) / 1e6,
+    std_dev = sd(StateTotal) / 1e6,
+    rows = n()
+  )
 
+# Create formatted table for year summary
 year_summary %>%
-mutate(across(c(Total, Min, Max, Median, Mean, StdDev), ~ .x / 1e9)) %>% # billions
-kbl(
-booktabs = TRUE,
-digits = 2,
-caption = " Annual summary statistics for federal funds to Pennsylvania (in millions of dollars). Total Funds represents the sum across all federal programs. Min/Max/Median/Mean describe the distribution of individual program spending. Programs indicates the number of federal programs with funding each year. Note: Negative values may represent loan repayments, program adjustments, or recovered funds"
-) %>%
-kable_styling(full_width = FALSE, position = "center")
-
+  kbl(
+    col.names = c(
+      "Year", 
+      "Total", 
+      "Min", 
+      "Max", 
+      "Median", 
+      "Mean", 
+      "Std Dev",
+      "Programs"
+    ),
+    digits = 2,
+    format.args = list(big.mark = ",")
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    position = "center"
+  ) %>%
+  column_spec(1, bold = TRUE)
 ```
+
+Before we dive into the function code and object code, we wanted to examine the data set as a whole. Summary statistics provide an overview of the data’s central tendencies, variability, and range, which helps us understand the scope and patterns of the data. The full summary table can be seen in @tbl-yearly-summary. 
+
+We see that total federal spending in Pennsylvania is monotonically increasing from 2004 to 2010, growing from approximately \$102.6 billion to $164.4 billion, an increase of about 60% over the seven-year period. 
+The median program size remains relatively stable and small across all years, hovering between \$1.23 million and \$1.64 million, which indicates that most federal programs provide modest amounts of funding. In contrast, the mean program size is substantially higher, ranging from \$137.49 million in 2004 to \$197.38 million in 2010, suggesting that the distribution is right-skewed with a few very large programs pulling the average upward. 
+
+One may notice that the minimum values are all negative. These negative values typically represent loan repayments to the federal government, accounting adjustments, or recovered over payments rather than actual expenditures
+
 ## Function Code
 
-Here we see our function code plot. We first see that income security is way higher than any other spending leading the charge at around 100 Billion in 2010. This is surprising as you might think other categories such as general agriculture would get more funding, however in a state like PA agriculture is not as much as a focus as the weather can only stand certain types of crops. National Function comes after and covers federal budget expenditures directly that are accounted into federal funds data. 
+@fig-spending-by-functioncode displays the temporal trends in federal spending across different functional categories from 2004 to 2010. The most striking pattern is the dominance of Income Security spending, which accounts for the majority of federal funds to Pennsylvania throughout this period. Income Security spending grew steadily from approximately \$70 billion in 2004 to nearly \$100 billion in 2010, representing programs such as Social Security, Medicare, and unemployment compensation. This category alone represents more than half of all federal spending in the state.
 
-```{r fig-function, fig.cap="Federal spending in Pennsylvania by function code from 2004 to 2010.", fig.alt="Line chart showing federal spending in Pennsylvania over time, separated by function code categories."}
+The remaining functional categories show much more modest spending levels, all clustering below \$25 billion annually. National Functions ranks second, displaying gradual growth from about \$15 billion to \$25 billion over the period. Defense spending shows relatively stable funding around \$10-15 billion, with a slight increase in later years. Community Development exhibits the most notable growth among the smaller categories, rising from approximately \$8 billion in 2004 to nearly \$20 billion by 2009 before declining slightly in 2010—this surge likely reflects increased federal investment in infrastructure and housing assistance during and after the 2008 financial crisis. Human Resources, Agriculture, and Natural Resources both show relatively flat trajectories at low levels throughout the period, each remaining below \$5 billion annually. The "Other" category, which captures null or unclassified function codes, represents an extremely small portion of total spending. 
+
+```{r}
+#| label: fig-spending-by-functioncode
+#| fig-cap: "Spending by Function Code"
+#| echo: false
+
 # Author: Robert Pitsko | Reviewer: Zach Thomas
 
 function_spending_df <- combined_df %>%
@@ -145,18 +174,11 @@ ggplot(
   theme_minimal()
 ```
 
-
-
-
-
-
-
-
-
-## Object Code
-
-Here we see our Object Spending covering our x objects that contribute to the federal funds spending. On top is retirement which matches up to our functions data showing it on top. However, we see a closer difference in the objects than we do the functions with direct payments to individuals and grants close behind. This shows us that majority of the spending in PA for agricultural related functions is salaries and retirement which does make sense for a densely populated state like PA. 
-```{r fig-object, fig.cap="Federal spending in Pennsylvania by object code from 2004 to 2010.", fig.alt="Line chart showing federal spending in Pennsylvania over time, separated by object codes such as grants, loans, and direct payments.", fig.show='hold'}
+```{r}
+#| label: object-code
+#| fig-cap: "Federal spending in Pennsylvania by object code from 2004 to 2010."
+#| fig-alt: "Line chart showing federal spending in Pennsylvania over time, separated by object codes such as grants, loans, and direct payments."
+#| echo: false
 # Author: Zach Thomas | Reviewer: Robert Pitsko
 
 object_spending_df <- combined_df %>%
@@ -166,15 +188,20 @@ summarise(TotalSpend = sum(StateTotal, na.rm = TRUE), .groups = "drop")
 
 # Author: Zach Thomas | Reviewer: Robert Pitsko
 
-ggplot(object_spending_df,
-aes(x = Year, y = TotalSpend, color = ObjectCode, group = ObjectCode)) +
-geom_line(linewidth = 1) +
-scale_y_continuous(labels = label_number(scale = 1e-9, suffix = "B")) +
-labs(x = "Year", y = "Total spending", color = "Object Code") +
+ggplot(object_spending_df, aes(x = Year, y = TotalSpend, color = ObjectCode, group = ObjectCode)) +
+  geom_line(linewidth = 1) +
+  scale_y_continuous(labels = label_number(scale = 1e-9, suffix = "B")) +
+  labs(x = "Year", 
+       y = "Total spending", 
+       title = "Federal Spending by Object Code",
+       color = "Object Code") +
 theme_minimal()
 
 ```
 
+## Object Code
+
+Here we see our Object Spending covering our x objects that contribute to the federal funds spending. On top is retirement which matches up to our functions data showing it on top. However, we see a closer difference in the objects than we do the functions with direct payments to individuals and grants close behind. This shows us that majority of the spending in PA for agricultural related functions is salaries and retirement which does make sense for a densely populated state like PA. 
 
 # Author Contributions
 - **Zach Thomas:** Visualization (Object Code), Writing (Intro/EDA narrative), Data curation, QMD File Creation
@@ -184,227 +211,46 @@ theme_minimal()
 Data Link:  https://www.ers.usda.gov/data-products/federal-funds
 
 # Code Appendix
-```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
-#Object Code Section
-# Author: Zach Thomas | Reviewer: Robert Pitsko
-library(readxl)
-#data
-PA_2010 <- read_excel("data/FederalFunds_2010Data_PA.xls")
 
-PA_2009 <- read_excel("data/FederalFunds_2009Data_PA.xls")
+### Get Packages
 
-PA_2008 <- read_excel("data/FederalFunds_2008Data_PA.xls")
+```{r ref.label="packages"}
+#| echo: true
+#| eval: false
+```
 
-PA_2007 <- read_excel("data/FederalFunds_2007Data_PA.xls")
+### Load our data frame
 
-PA_2006 <- read_excel("data/FederalFunds_2006Data_PA.xls")
+```{r ref.label="create-dataframe"}
+#| echo: true
+#| eval: false
+```
 
-PA_2005 <- read_excel("data/FederalFunds_2005Data_PA.xls")
+### Create Summary Statistics Table
 
-PA_2004 <- read_excel("data/FederalFunds_2004Data_PA.xls")
+```{r ref.label="tbl-yearly-summary"}
+#| echo: true
+#| eval: false
+```
 
-#drop rows
-PA_2010_clean <- PA_2010[1:10]
-PA_2009_clean <- PA_2009[1:10]
-PA_2008_clean <- PA_2008[1:10]
-PA_2007_clean <- PA_2007[1:10]
-PA_2006_clean <- PA_2006[1:10]
-PA_2005_clean <- PA_2005[1:10]
-PA_2004_clean <- PA_2004[1:10]
+### Create Spending by Function Code Graph
 
-#grab columns
-PA_2010_short <- PA_2010_clean[, c("ObjectCode","StateTotal")]
-PA_2009_short <- PA_2009_clean[, c("ObjectCode","StateTotal")]
-PA_2008_short <- PA_2008_clean[, c("ObjectCode","StateTotal")]
-PA_2007_short <- PA_2007_clean[, c("ObjectCode","StateTotal")]
-PA_2006_short <- PA_2006_clean[, c("ObjectCode","StateTotal")]
-PA_2005_short <- PA_2005_clean[, c("ObjectCode","StateTotal")]
-PA_2004_short <- PA_2004_clean[, c("ObjectCode","StateTotal")]
-
-
-#add year column
-PA_2010_short$Year <- 2010
-PA_2009_short$Year <- 2009
-PA_2008_short$Year <- 2008
-PA_2007_short$Year <- 2007
-PA_2006_short$Year <- 2006
-PA_2005_short$Year <- 2005
-PA_2004_short$Year <- 2004
-
-#combine
-PA_all_raw <- rbind(PA_2010_short,PA_2009_short, PA_2008_short,PA_2007_short, PA_2006_short,PA_2005_short, PA_2004_short)
-PA_all <- PA_all_raw[-1,]
-
-#plot
-library(dplyr)
-library(ggplot2)
-
-PA_all$StateTotal <- as.numeric(PA_all$StateTotal)
-
-library(dplyr)
-library(ggplot2)
-
-# Make a millions column
-spending_totals <- spending_totals %>%
-  mutate(TotalSpending_M = TotalSpending / 1e6)
-
-spending_totals_clean <- spending_totals %>%
-  filter(!is.na(ObjectCode))
-
-code_labels <- c(
-  GG = "Grants",
-  DL = "Direct Loans",
-  GL = "Guaranteed Loans",
-  DX = "Direct Payments",
-  DO = "Other Direct Payments",
-  DR = "Retirement/Disability",
-  PC = "Procurement Contracts",
-  SW = "Salaries/Wages"
-)
-
-library(ggplot2)
-library(scales)
-
-Spending_OT <- ggplot(spending_totals_clean, 
-                      aes(x = Year, 
-                          y = TotalSpending, 
-                          color = ObjectCode,
-                          group = ObjectCode)) +
-  geom_line(size = 1.2) +
-  geom_point(size = 2) +
-  scale_y_continuous(labels = label_number(scale = 1e-9, suffix = "B")) +
-  scale_color_manual(
-    name = "Spending Type",
-    values = scales::hue_pal()(length(code_labels)),  # auto colors
-    labels = code_labels
-  ) +
-  labs(title = "Total Funding Over Time by Program Type",
-       x = "Year",
-       y = "Total Spending (Billions of $)") +
-  theme_minimal()
-
-
-Spending_OT
-  
-#Function Code Section: 
-# Author: Robert Pitsko | Reviewer: Zach Thomas
-
-library(readxl)
-library(dplyr)
-library(ggplot2)
-library(scales)
-library(patchwork)
-library(kableExtra)
-
-# Gets the data frame of USDA data for each year
-# removes the first row of each df as this contains null values
-# keeps only the needed rows (other columns are very sparse)
-# adds a year column to each data frame and binds them together
-df04 = read_excel("data/FederalFunds_2004Data_PA.xls")
-df04 =df04[1:10]
-df04 = df04[-1, ]
-df04$Year = "2004"
-df05 = read_excel("data/FederalFunds_2005Data_PA.xls")
-df05 =df05[1:10]
-df05 = df05[-1, ]
-df05$Year = "2005"
-df06 = read_excel("data/FederalFunds_2006Data_PA.xls")
-df06 =df06[1:10]
-df06 = df06[-1, ]
-df06$Year = "2006"
-df07 = read_excel("data/FederalFunds_2007Data_PA.xls")
-df07 =df07[1:10]
-df07 = df07[-1, ]
-df07$Year = "2007"
-df08 = read_excel("data/FederalFunds_2008Data_PA.xls")
-df08 =df08[1:10]
-df08 = df08[-1, ]
-df08$Year = "2008"
-df09 = read_excel("data/FederalFunds_2009Data_PA.xls")
-df09 =df09[1:10]
-df09 = df09[-1, ]
-df09$Year = "2009"
-df10 = read_excel("data/FederalFunds_2010Data_PA.xls")
-df10 =df10[1:10]
-df10 = df10[-1, ]
-df10$Year = "2010"
-combined_df = rbind(df04, df05, df06, df07, df08, df09, df10)
-
-
-# Summary statistics by year across all programs
-year_summary <- combined_df %>%
-select(StateTotal, Year) %>%
-mutate(StateTotal = as.numeric(StateTotal)) %>%
-group_by(Year) %>%
-summarize(
-total_spending = sum(StateTotal) / 1e6, # Convert to millions
-min_spending = min(StateTotal) / 1e6,
-max_spending = max(StateTotal) / 1e6,
-median_spending = median(StateTotal) / 1e6,
-mean_spending = mean(StateTotal) / 1e6,
-std_dev = sd(StateTotal) / 1e6,
-rows = n()
-)
-# Create formatted table for year summary
-year_summary %>%
-kbl(
-col.names = c(
-"Year",
-"Total",
-"Min",
-"Max",
-"Median",
-"Mean",
-"Std Dev",
-"Programs"
-),
-digits = 2,format.args = list(big.mark = ",")
-) %>%
-kable_styling(
-bootstrap_options = c("striped", "hover", "condensed"),
-full_width = FALSE,
-position = "center"
-) %>%
-column_spec(1, bold = TRUE)
-# Create spending dataframe by function code
-function_spending_df <- combined_df %>%
-select(FunctionCodeDescription, StateTotal, Year) %>%
-mutate(
-StateTotal = as.numeric(StateTotal),
-FunctionCodeDescription = ifelse(
-is.na(FunctionCodeDescription),
-"Other",
-FunctionCodeDescription
-)
-) %>%
-group_by(FunctionCodeDescription, Year) %>%
-summarize(TotalSpend = sum(StateTotal))
-# Filter out IncomeSec category
-no_income <- function_spending_df %>%
-filter(FunctionCodeDescription != "IncomeSec")
-# Plot all function categories
-ggplot(
-function_spending_df,
-aes(
-x = Year,
-y = TotalSpend,
-color = FunctionCodeDescription,
-group = FunctionCodeDescription
-)
-) +
-geom_line(aes(linetype = FunctionCodeDescription)) +
-labs(
-title = "Spending by FunctionCode Category from 2004-2010",
-x = "Year",
-y = "Spending in Millions",
-7
-color = "Function Category",
-linetype = "Function Category"
-) +
-scale_y_continuous(labels = label_dollar(scale = 1e-6, suffix = "M"))
-
+```{r ref.label="function-code-dataframe"}
+#| echo: true
+#| eval: false
 
 ```
 
+```{r ref.label="fig-spending-by-functioncode"}
+#| echo: true
+#| eval: false
+```
+
+### Create Spending by Object Code Graph
+
+```{r ref.label="object-code"}
+#| echo: true
+#| eval: false
+```
 
 
